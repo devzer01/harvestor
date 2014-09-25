@@ -86,7 +86,7 @@ foreach ($loc_ids as $locid) {
 	$offers = locOffers($locid);
 	echo "Results : " . $offers['paging']['total_results'] . "\n";
 	if ($offers['paging']['total_results'] == 0) continue;
-	storeDocument('offers', $offers);
+	storeDocument('offers2', $offers);
 
 	$next_page = $offers['paging']['next'];
 
@@ -150,19 +150,15 @@ function districtLoop()
 
 function uniqLocations()
 {
-	$cmd = 'db.locations.find({}, { "0.location_id" : 1,"1.location_id" : 1,"2.location_id" : 1,"3.location_id" : 1,"4.location_id" : 1,"5.location_id" : 1,"6.location_id" : 1, "7.location_id" : 1 });';
 	$m = new MongoClient(); // connect
         $db = $m->selectDB("tripad");
-	$mcol = $db->selectCollection('locations');
+	$mcol = $db->selectCollection('locations2');
 
-	$flds = ["0.location_id" => 1,"1.location_id" => 1,"2.location_id" => 1,"3.location_id" => 1,"4.location_id" => 1,"5.location_id" => 1,"6.location_id" => 1, "7.location_id" => 1];
-	$cursor = $mcol->find(array(), $flds);
+	$cursor = $mcol->find();
 	$ids = [];
 	foreach ($cursor as $doc) {
-    		for ($i=0; $i < 8; $i++) {
-			if (!isset($doc[$i]['location_id'])) continue;
-			$ids[] = $doc[$i]["location_id"];
-		}
+			if (!isset($doc['location_id'])) continue;
+			$ids[] = $doc["location_id"];
 	}
 
 	echo "Count : " . count(array_unique($ids)) . "\n";
