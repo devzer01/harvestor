@@ -1,75 +1,7 @@
 <?php
-/*
-switch ($_POST['access']) {
-	case 'list':
-		$url = "https://api.tripadvisor.com/api/internal/1.2/meta_hac/293920?lang=en_US&checkin=2014-09-23&adults=2&nights=4&currency=USD&ip=infer&mcid=14525&devicetype=mobile&newrequest=false&commerceonly=false&rooms=1&lod=list&subcategory=hotel&subcategory_hotels=hotel&impression_key=f89d6568-3cdf-4302-b10f-665c337e6248&dieroll=55&limit=50&roomtype=lowest_price&sort=popularity&mobile=true";
-		break;
-	case 'detail':
-		$url = "https://api.tripadvisor.com/api/internal/1.2/meta_hac/612516?checkin=2014-09-23&countrycode=TH&adults=2&lod=extended&nights=4&devicetype=mobile&newrequest=true&currency=USD";
-		break;
-	case 'type':
-		$url = 'https://api.tripadvisor.com/api/internal/1.2/typeahead/' . urlencode($_POST['loc']) . '?lang=en_US&category=geos&limit=50';
-		break;
-	default:
-		$url = 'https://api.tripadvisor.com/api/internal/1.2/typeahead/' . urlencode($_POST['loc']) . '?lang=en_US&category=geos&limit=50';
-		break;
-} */
-define('DEBUG', 0);
 
 locLoop();
 
-function offerLoop()
-{
-	$offer_urls = uniqOffers();
-	echo "Number of Offers " . count($offer_urls) . "\n";
-	$continue = false;
-	foreach ($offer_urls as $offer_url) {
-
-		if (preg_match("/\/909612\?check/", $offer_url)) {
-			echo "Match Found " . $offer_url . "\n";
-			$continue = true;
-			continue;
-		}
-
-		if (!$continue) continue;
-
-		echo "Trying " . $offer_url . "\n";
-		try {
-		 	$hotel = json_decode(getHTTPContent($offer_url), true);
-			if (!isset($hotel['data'][0]['name'])) continue;
-			echo "Hotel : " . $hotel['data'][0]['name'] . "\n";
-                	storeDocument('hotels', $hotel);
-                	sleep(rand(1,3));
-		} catch (Exception $e) {
-			echo $e->getMessage();
-		}
-
-	}	
-
-}
-
-
-function uniqOffers()
-{
-        $m = new MongoClient(); // connect
-        $db = $m->selectDB("tripad");
-        $mcol = $db->selectCollection('offers');
-
-        $flds = ["data.api_detail_url" => 1]; //"1.location_id" => 1,"2.location_id" => 1,"3.location_id" => 1,"4.location_id" => 1,"5.location_id" => 1,"6.location_id" => 1, "7.location_id" => 1];
-        $cursor = $mcol->find(array(), $flds);
-        $ids = [];
-        foreach ($cursor as $doc) {
-         	foreach ($doc['data'] as $d) {
-			if (!isset($d['api_detail_url'])) continue;
-        	        $ids[] = $d["api_detail_url"];
-		}
-        }
-
-        echo "Count : " . count(array_unique($ids)) . "\n";
-
-        return array_unique($ids);
-
-}
 
 function locLoop()
 {
@@ -99,8 +31,7 @@ foreach ($loc_ids as $locid) {
 	} while ($offers['paging']['next'] !== null);
 	}
 	} catch (Exception $e) {
-		echo "Something Went Wrong";
-		echo $e->getMessage() . "\n";
+		echo "No Offers in Location " . $locid . "\n";
 	}
 
 	sleep(rand(1,3));
@@ -108,43 +39,10 @@ foreach ($loc_ids as $locid) {
 
 }
 
-
 function locOffers($locid)
 {
 	$url = "https://api.tripadvisor.com/api/internal/1.2/meta_hac/" . $locid . "?lang=en_US&checkin=2014-09-30&adults=2&nights=4&currency=USD&ip=infer&mcid=14525&devicetype=mobile&newrequest=false&commerceonly=false&rooms=1&lod=list&subcategory=hotel&subcategory_hotels=hotel&impression_key=f89d6568-3cdf-4302-b10f-665c337e6248&dieroll=55&limit=50&roomtype=lowest_price&sort=popularity&mobile=true";
         return json_decode(getHTTPContent($url), true);
-}
-
-function districtLoop()
-{
-	$attr = array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION);
-	$dbo = new PDO("mysql:host=localhost;dbname=tripad", "root", "", $attr);
-
-
-	$sql = "SELECT amphur_name FROM amphur_detail";
-	$sth = $dbo->prepare($sql);
-	$sth->execute();
-	$rows = $sth->fetchAll();
-	$city = 'Ban Hong';
-	$start = false;
-	foreach ($rows as $row) {
-
-		if (trim($row['amphur_name']) == $city) $start = true;
-		if (!$start) continue;
-
-		echo "Current District " . $row['amphur_name'] . "\n";
-		if (strlen($row['amphur_name']) < 3) continue;
-		try {
-			$doc = getLocationDocument($row['amphur_name']);
-			if (empty($doc)) continue;
-			storeDocument('locations', $doc);
-		} catch (Exception $e) {
-			echo $e->getMessage();
-			exit;
-		}
-		if (DEBUG === 1) exit;
-		sleep(rand(1,4));
-	}
 }
 
 function uniqLocations()
@@ -180,15 +78,6 @@ function storeDocument($coll, $doc)
 
 	return $mcol->insert($doc);
 }
-
-function getLocationDocument($name)
-{
-
-	$url = 'https://api.tripadvisor.com/api/internal/1.2/typeahead/' . urlencode($name) . '?lang=en_US&category=geos&limit=50';
-	return json_decode(getHTTPContent($url), true);
-}
-
-
 
 function getHTTPContent($url, $return_header = false)
 {
