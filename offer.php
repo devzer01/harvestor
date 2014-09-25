@@ -16,8 +16,7 @@ switch ($_POST['access']) {
 } */
 define('DEBUG', 0);
 
-//districtLoop();
-offerLoop();
+locLoop();
 
 function offerLoop()
 {
