@@ -67,7 +67,6 @@ function subdistLoop()
 		//if (!$start) continue;
 	
 		echo "Current Province " . $row['province_id'] . " - " . $row['province_name'] . "\n";
-		if (strlen($row['province_name']) < 3) continue;
 		try {
 			$doc = getLocationDocument($row['province_name']);
 			if (empty($doc)) continue;
