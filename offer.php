@@ -95,7 +95,7 @@ foreach ($loc_ids as $locid) {
 		$next_page = $offers['paging']['next'];
 		echo "Paging Next Page " . $next_page . "\n";
 		$offers = json_decode(getHTTPContent($next_page), true);
-		storeDocument('offers', $offers);
+		storeDocument('offers2', $offers);
 		sleep(rand(1,3));
 	} while ($offers['paging']['next'] !== null);
 	}
