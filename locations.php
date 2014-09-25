@@ -2,7 +2,7 @@
 
 $locs = uniqLocations();
 
-$fp = fopen("locations.csv", "w+");
+$fp = fopen("data/updated_locations.csv", "w+");
 $hdr = array('Category', 'Parent', 'Name',  'Geo', 'Sub Category', 'Country', 'Location Id', 'Results');
 fputcsv($fp, $hdr);
 
@@ -13,8 +13,6 @@ foreach ($locs as $loc) {
 
 fclose($fp);
 
-
-//echo getResult(0);
 
 function getResult($id)
 {

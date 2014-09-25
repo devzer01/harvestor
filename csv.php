@@ -5,11 +5,11 @@ function uniqOffers()
 {
 	$m = new MongoClient(); // connect
 	$db = $m->selectDB("tripad");
-	$mcol = $db->selectCollection('hotels');
+	$mcol = $db->selectCollection('hotels2');
 
-	$cursor = $mcol->find(array("data.0.phone" => array('$ne' => null)));
+	$cursor = $mcol->find();
 	
-	$fp = fopen("hotels.csv", "w+");
+	$fp = fopen("data/update_hotels.csv", "w+");
 	
 	$hdr = array('Name', 'Phone', 'Address', 'Price Level', 'Class', 'Price', 'Best Price', 'Average Price', 'Amenities');
 	fputcsv($fp, $hdr);
