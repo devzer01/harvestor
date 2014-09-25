@@ -1,23 +1,9 @@
 <?php
-/*
-switch ($_POST['access']) {
-	case 'list':
-		$url = "https://api.tripadvisor.com/api/internal/1.2/meta_hac/293920?lang=en_US&checkin=2014-09-23&adults=2&nights=4&currency=USD&ip=infer&mcid=14525&devicetype=mobile&newrequest=false&commerceonly=false&rooms=1&lod=list&subcategory=hotel&subcategory_hotels=hotel&impression_key=f89d6568-3cdf-4302-b10f-665c337e6248&dieroll=55&limit=50&roomtype=lowest_price&sort=popularity&mobile=true";
-		break;
-	case 'detail':
-		$url = "https://api.tripadvisor.com/api/internal/1.2/meta_hac/612516?checkin=2014-09-23&countrycode=TH&adults=2&lod=extended&nights=4&devicetype=mobile&newrequest=true&currency=USD";
-		break;
-	case 'type':
-		$url = 'https://api.tripadvisor.com/api/internal/1.2/typeahead/' . urlencode($_POST['loc']) . '?lang=en_US&category=geos&limit=50';
-		break;
-	default:
-		$url = 'https://api.tripadvisor.com/api/internal/1.2/typeahead/' . urlencode($_POST['loc']) . '?lang=en_US&category=geos&limit=50';
-		break;
-} */
+
 define('DEBUG', 0);
 
-//districtLoop();
-locLoop();
+subdistLoop();
+
 
 function locLoop()
 {
@@ -61,6 +47,64 @@ function locOffers($locid)
 {
 	$url = "https://api.tripadvisor.com/api/internal/1.2/meta_hac/" . $locid . "?lang=en_US&checkin=2014-09-25&adults=2&nights=4&currency=USD&ip=infer&mcid=14525&devicetype=mobile&newrequest=false&commerceonly=false&rooms=1&lod=list&subcategory=hotel&subcategory_hotels=hotel&impression_key=f89d6568-3cdf-4302-b10f-665c337e6248&dieroll=55&limit=50&roomtype=lowest_price&sort=popularity&mobile=true";
         return json_decode(getHTTPContent($url), true);
+}
+
+function subdistLoop()
+{
+	$attr = array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION);
+	$dbo = new PDO("mysql:host=localhost;dbname=tripad", "root", "", $attr);
+	
+	
+	$sql = "SELECT province_id, province_name FROM province_detail";
+	$sth = $dbo->prepare($sql);
+	$sth->execute();
+	$rows = $sth->fetchAll();
+	
+	$start = false;
+	foreach ($rows as $row) {
+	
+		//if (trim($row['province_name']) == $city) $start = true;
+		//if (!$start) continue;
+	
+		echo "Current Province " . $row['province_id'] . " - " . $row['province_name'] . "\n";
+		if (strlen($row['province_name']) < 3) continue;
+		try {
+			$doc = getLocationDocument($row['province_name']);
+			if (empty($doc)) continue;
+			
+			foreach ($doc as $d) {
+				if ($d['country'] != 'Thailand') continue;
+				
+				if (!isLocationHaveOffers($d['location_id'])) {
+					echo "Location Id " . $d['location_id'] . " Not in system \n";
+					storeDocument('locations2', $d);
+				}
+			}
+			
+		} catch (Exception $e) {
+			echo $e->getMessage();
+			exit;
+		}
+		sleep(rand(1,4));
+	}
+}
+
+function isLocationHaveOffers($id)
+{
+	$m = new MongoClient(); // connect
+	$db = $m->selectDB("tripad");
+	$mcol = $db->selectCollection('offers');
+	
+	$filter = array("status.primary_geo" => "$id");
+	
+	$cursor = $mcol->find($filter);
+	
+	
+	foreach ($cursor as $doc) {
+		if ($doc['paging']['total_results'] > 0) return true;
+	}
+	
+	return false;
 }
 
 function districtLoop()
