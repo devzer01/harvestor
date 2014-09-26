@@ -8,7 +8,11 @@ echo "Got Hotel(s) " . count($links) . "\n";
 foreach ($links as $id => $url) {
 	
 	$html = getHTTPContent($url);
+	
+	file_put_contents('test.html', $html);
+	
 	$html = str_get_html($html);
+	
 	
 	$location = $html->find("div.line", 1)->find("span.detail", 0)->plaintext;
 	$address = $html->find("div.line", 2)->find("span.detail", 0)->plaintext;
