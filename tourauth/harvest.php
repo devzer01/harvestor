@@ -22,10 +22,11 @@ if (is_dir($dir)) {
         		$name = $link->find("a",0)->plaintext;
         		
         		preg_match("/\-([0-9]+)$/", $url, $match);
+        		$id = $match[1];
         		
-        		print_r($match);
-        		$id = $match[0];
+        		$hotel = array('url' => $url, 'name' => $name, 'id' => $id);
         		
+        		storeDocument('tahotels', $hotel);
         	}
         	
         }
