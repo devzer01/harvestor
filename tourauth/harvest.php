@@ -2,7 +2,43 @@
 
 require_once 'simple_html_dom.php';
 
+$links = getHotelPages();
+echo "Got Hotel(s) " . $count($links) . "\n";
 
+foreach ($links as $id => $url) {
+	
+	$html = getHTTPContent($url);
+	$html = str_get_html($html);
+	
+	$location = $html->find("div.line", 1)->find("span.detail", 0)->plaintext;
+	$address = $html->find("div.line", 2)->find("span.detail", 0)->plaintext;
+	$phone = $html->find("div.line", 3)->find("p.phone", 0)->plaintext;
+	$web = $html->find("div.line", 3)->find("p.globe", 0)->find("a", 0)->href;
+	$sub = $html->find("div.div_subdata", 0)->find("p", 4)->plaintext;
+
+	$data = array('location' => $location, 'address' => $address, 'phone' => $phone, 'web' => $web, 'sub' => $sub);
+	
+	var_dump($data);
+	exit;
+}
+
+function getHotelPages()
+{
+	
+	$m = new MongoClient(); // connect
+	$db = $m->selectDB("tripad");
+	$mcol = $db->selectCollection('tahotels');
+
+	$cursor = $mcol->find();
+	$links = [];
+	foreach ($cursor as $doc) {
+		$links[$doc['id']] = $doc['url'];
+	}
+	return $links;	
+}
+
+function parseSearch()
+{
 $dir = "../ta/";
 
 // Open a known directory, and proceed to read its contents
@@ -32,6 +68,7 @@ if (is_dir($dir)) {
         }
         closedir($dh);
     }
+}
 }
 
 function storeDocument($coll, $doc) 
