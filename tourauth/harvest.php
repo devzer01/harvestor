@@ -19,7 +19,7 @@ if (is_dir($dir)) {
         	
         	foreach ($links as $link) {
         		$url = $link->find("a", 0)->href;
-        		$name = $link->find("a",0)->textvalue;
+        		$name = $link->find("a",0)->plaintext;
         		
         		echo $url . " - " . $name;
         	}
