@@ -5,12 +5,17 @@ require_once 'simple_html_dom.php';
 $links = getHotelPages();
 echo "Got Hotel(s) " . count($links) . "\n";
 
+$m = new MongoClient(); // connect
+$db = $m->selectDB("tripad");
+$mcol = $db->selectCollection('tahotels');
+
 foreach ($links as $id => $url) {
 	
 	$html = getHTTPContent($url);
 	
 	$html = str_get_html($html);
-	
+
+	echo "Record ID: " . $id . " - " . $url . "\n";
 	
 	$location = $html->find("div.line", 1)->find("span.detail", 0)->plaintext;
 	$address = $html->find("div.line", 2)->find("span.detail", 0)->plaintext;
@@ -20,7 +25,12 @@ foreach ($links as $id => $url) {
 
 	$data = array('location' => $location, 'address' => $address, 'phone' => $phone, 'web' => $web, 'sub' => $sub);
 	
-	var_dump($data);
+	$mcol->update(
+			array("id" => $id),
+			$data,
+			array("upsert" => true)
+	);
+	
 	exit;
 }
 
