@@ -13,7 +13,7 @@ foreach ($links as $id => $url) {
 	$location = $html->find("div.line", 1)->find("span.detail", 0)->plaintext;
 	$address = $html->find("div.line", 2)->find("span.detail", 0)->plaintext;
 	$phone = $html->find("div.line", 3)->find("p.phone", 0)->plaintext;
-	$web = $html->find("div.line", 3)->find("div.contact_line", 3)->find("p", 0)->find("a", 0)->href;
+	$web = $html->find("p.globe", 0)->find("a", 0)->href;
 	$sub = $html->find("div.div_subdata", 0)->find("p", 4)->plaintext;
 
 	$data = array('location' => $location, 'address' => $address, 'phone' => $phone, 'web' => $web, 'sub' => $sub);
