@@ -5,33 +5,26 @@ require_once 'simple_html_dom.php';
 $links = getHotelPages();
 echo "Got Hotel(s) " . count($links) . "\n";
 
-$m = new MongoClient(); // connect
-$db = $m->selectDB("tripad");
-$mcol = $db->selectCollection('tahotels');
-
 foreach ($links as $id => $url) {
 	
-	$html = getHTTPContent($url);
+	$html = getHTTPContent($url['url']);
 	
 	$html = str_get_html($html);
 
-	echo "Record ID: " . $id . " - " . $url . "\n";
+	echo "Record ID: " . $id . " - " . $url['url'] . "\n";
 	
 	$location = $html->find("div.line", 1)->find("span.detail", 0)->plaintext;
 	$address = $html->find("div.line", 2)->find("span.detail", 0)->plaintext;
 	$phone = $html->find("div.line", 3)->find("p.phone", 0)->plaintext;
 	$web = $html->find("div.line", 3)->find("a", 1)->href;
 	$sub = $html->find("div.overview", 0)->plaintext;
+	$sub = strip_tags($sub);
+	$sub = preg_replace("/[^0-9A-Za-z .:]/", "", $sub);
 
 	$data = array('location' => $location, 'address' => $address, 'phone' => $phone, 'web' => $web, 'sub' => $sub);
+	$full = array_merge($url, $data);
 	
-	$mcol->update(
-			array("id" => "$id"),
-			$data,
-			array("upsert" => true)
-	);
-	
-	exit;
+	storeDocument('tahotelsfull', $full);
 }
 
 function getHotelPages()
@@ -44,7 +37,7 @@ function getHotelPages()
 	$cursor = $mcol->find();
 	$links = [];
 	foreach ($cursor as $doc) {
-		$links[$doc['id']] = $doc['url'];
+		$links[$doc['id']] = $doc;
 	}
 	return $links;	
 }
