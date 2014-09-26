@@ -21,7 +21,7 @@ if (is_dir($dir)) {
         		$url = $link->find("a", 0)->href;
         		$name = $link->find("a",0)->plaintext;
         		
-        		preg_match("/\-([0-9]+)$/", $link, $match);
+        		preg_match("/\-([0-9]+)$/", $url, $match);
         		
         		print_r($match);
         		$id = $match[0];
