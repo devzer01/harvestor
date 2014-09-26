@@ -21,7 +21,9 @@ if (is_dir($dir)) {
         		$url = $link->find("a", 0)->href;
         		$name = $link->find("a",0)->plaintext;
         		
-        		echo $url . " - " . $name;
+        		preg_match("/[0-9]+/", $link, $match);
+        		
+        		print_r($match);
         	}
         	
         }
