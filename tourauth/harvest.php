@@ -26,7 +26,7 @@ foreach ($links as $id => $url) {
 	$data = array('location' => $location, 'address' => $address, 'phone' => $phone, 'web' => $web, 'sub' => $sub);
 	
 	$mcol->update(
-			array("id" => $id),
+			array("id" => "$id"),
 			$data,
 			array("upsert" => true)
 	);
