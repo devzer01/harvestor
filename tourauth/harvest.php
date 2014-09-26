@@ -3,7 +3,7 @@
 require_once 'simple_html_dom.php';
 
 $links = getHotelPages();
-echo "Got Hotel(s) " . $count($links) . "\n";
+echo "Got Hotel(s) " . count($links) . "\n";
 
 foreach ($links as $id => $url) {
 	
