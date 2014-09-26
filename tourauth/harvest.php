@@ -11,8 +11,8 @@ if (is_dir($dir)) {
         while (($file = readdir($dh)) !== false) {
         	if (!preg_match("/html$/", $file)) continue;
         	
-        	if (!is_file($file)) continue;
-        	$html = file_get_contents($file);
+        	if (!is_file($dir . $file)) continue;
+        	$html = file_get_contents($dir . $file);
         	$html = str_get_html($html);
         	
         	$links = $html->find("div.topic");
