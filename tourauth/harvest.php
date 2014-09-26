@@ -9,16 +9,14 @@ foreach ($links as $id => $url) {
 	
 	$html = getHTTPContent($url);
 	
-	file_put_contents('test.html', $html);
-	
 	$html = str_get_html($html);
 	
 	
 	$location = $html->find("div.line", 1)->find("span.detail", 0)->plaintext;
 	$address = $html->find("div.line", 2)->find("span.detail", 0)->plaintext;
 	$phone = $html->find("div.line", 3)->find("p.phone", 0)->plaintext;
-	$web = $html->find("div.line", 3)->find("a", 1)->plaintext;
-	$sub = $html->find("div.div_subdata", 0)->find("p", 4)->plaintext;
+	$web = $html->find("div.line", 3)->find("a", 1)->href;
+	$sub = $html->find("div.overview", 0)->plaintext;
 
 	$data = array('location' => $location, 'address' => $address, 'phone' => $phone, 'web' => $web, 'sub' => $sub);
 	
